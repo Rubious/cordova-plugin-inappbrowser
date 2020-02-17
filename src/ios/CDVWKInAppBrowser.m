@@ -1069,7 +1069,7 @@ BOOL isExiting = FALSE;
 }
 
 - (BOOL)prefersStatusBarHidden {
-    return NO;
+    return YES;
 }
 
 - (void)close
@@ -1179,7 +1179,7 @@ BOOL isExiting = FALSE;
     
     // loading url, start spinner, update back/forward
     
-    self.addressLabel.text = NSLocalizedString(@"Loading...", nil);
+    self.addressLabel.text = NSLocalizedString(@"Loading...", nil);    
     self.backButton.enabled = theWebView.canGoBack;
     self.forwardButton.enabled = theWebView.canGoForward;
     
