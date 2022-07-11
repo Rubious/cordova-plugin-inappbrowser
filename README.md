@@ -21,11 +21,10 @@ description: Open an in-app browser window.
 #         under the License.
 -->
 
-|AppVeyor|Travis CI|
-|:-:|:-:|
-|[![Build status](https://ci.appveyor.com/api/projects/status/github/apache/cordova-plugin-inappbrowser?branch=master)](https://ci.appveyor.com/project/ApacheSoftwareFoundation/cordova-plugin-inappbrowser)|[![Build Status](https://travis-ci.org/apache/cordova-plugin-inappbrowser.svg?branch=master)](https://travis-ci.org/apache/cordova-plugin-inappbrowser)|
 
 # cordova-plugin-inappbrowser
+
+[![Android Testsuite](https://github.com/apache/cordova-plugin-inappbrowser/actions/workflows/android.yml/badge.svg)](https://github.com/apache/cordova-plugin-inappbrowser/actions/workflows/android.yml) [![Chrome Testsuite](https://github.com/apache/cordova-plugin-inappbrowser/actions/workflows/chrome.yml/badge.svg)](https://github.com/apache/cordova-plugin-inappbrowser/actions/workflows/chrome.yml) [![iOS Testsuite](https://github.com/apache/cordova-plugin-inappbrowser/actions/workflows/ios.yml/badge.svg)](https://github.com/apache/cordova-plugin-inappbrowser/actions/workflows/ios.yml) [![Lint Test](https://github.com/apache/cordova-plugin-inappbrowser/actions/workflows/lint.yml/badge.svg)](https://github.com/apache/cordova-plugin-inappbrowser/actions/workflows/lint.yml)
 
 You can show helpful articles, videos, and web resources inside of your app. Users can view web pages without leaving your app.
 
@@ -43,6 +42,10 @@ InAppBrowser window, by replacing window.open:
 
     window.open = cordova.InAppBrowser.open;
 
+If you change the browsers `window.open` function this way, it can have unintended side
+effects (especially if this plugin is included only as a dependency of another
+plugin).
+
 The InAppBrowser window behaves like a standard web browser,
 and can't access Cordova APIs. For this reason, the InAppBrowser is recommended
 if you need to load third-party (untrusted) content, instead of loading that
@@ -51,22 +54,6 @@ whitelist, nor is opening links in the system browser.
 
 The InAppBrowser provides by default its own GUI controls for the user (back,
 forward, done).
-
-For backwards compatibility, this plugin also hooks `window.open`.
-However, the plugin-installed hook of `window.open` can have unintended side
-effects (especially if this plugin is included only as a dependency of another
-plugin).  The hook of `window.open` will be removed in a future major release.
-Until the hook is removed from the plugin, apps can manually restore the default
-behaviour:
-
-    delete window.open // Reverts the call back to its prototype's default
-
-Although `window.open` is in the global scope, InAppBrowser is not available until after the `deviceready` event.
-
-    document.addEventListener("deviceready", onDeviceReady, false);
-    function onDeviceReady() {
-        console.log("window.open works well");
-    }
 
 ## Installation
 
@@ -80,12 +67,20 @@ simply hook `window.open` during initialization.  For example:
         window.open = cordova.InAppBrowser.open;
     }
 
+### Preferences
+
+#### <b>config.xml</b>
+- <b>InAppBrowserStatusBarStyle [iOS only]</b>: (string, options 'lightcontent', 'darkcontent' or 'default'. Defaults to 'default') set text color style for iOS. 'lightcontent' is intended for use on dark backgrounds. 'darkcontent' is only available since iOS 13 and intended for use on light backgrounds.
+```
+<preference name="InAppBrowserStatusBarStyle" value="lightcontent" />
+```
+
 ## cordova.InAppBrowser.open
 
 Opens a URL in a new `InAppBrowser` instance, the current browser
 instance, or the system browser.
 
-    var ref = cordova.InAppBrowser.open(url, target, options, headers);
+    var ref = cordova.InAppBrowser.open(url, target, options);
 
 - __ref__: Reference to the `InAppBrowser` window when the target is set to `'_blank'`. _(InAppBrowser)_
 
@@ -149,8 +144,8 @@ instance, or the system browser.
     - __enableViewportScale__:  Set to `yes` or `no` to prevent viewport scaling through a meta tag (defaults to `no`).
     - __mediaPlaybackRequiresUserAction__: Set to `yes` to prevent HTML5 audio or video from autoplaying (defaults to `no`).
     - __allowInlineMediaPlayback__: Set to `yes` or `no` to allow in-line HTML5 media playback, displaying within the browser window rather than a device-specific playback interface. The HTML's `video` element must also include the `webkit-playsinline` attribute (defaults to `no`).
-    - __presentationstyle__:  Set to `pagesheet`, `formsheet` or `fullscreen` to set the [presentation style](http://developer.apple.com/library/ios/documentation/UIKit/Reference/UIViewController_Class/Reference/Reference.html#//apple_ref/occ/instp/UIViewController/modalPresentationStyle) (defaults to `fullscreen`).
-    - __transitionstyle__: Set to `fliphorizontal`, `crossdissolve` or `coververtical` to set the [transition style](http://developer.apple.com/library/ios/#documentation/UIKit/Reference/UIViewController_Class/Reference/Reference.html#//apple_ref/occ/instp/UIViewController/modalTransitionStyle) (defaults to `coververtical`).
+    - __presentationstyle__:  Set to `pagesheet`, `formsheet` or `fullscreen` to set the [presentation style](https://developer.apple.com/documentation/uikit/uimodalpresentationstyle) (defaults to `fullscreen`).
+    - __transitionstyle__: Set to `fliphorizontal`, `crossdissolve` or `coververtical` to set the [transition style](https://developer.apple.com/documentation/uikit/uimodaltransitionstyle) (defaults to `coververtical`).
     - __toolbarposition__: Set to `top` or `bottom` (default is `bottom`). Causes the toolbar to be at the top or bottom of the window.
     - __hidespinner__: Set to `yes` or `no` to change the visibility of the loading indicator (defaults to `no`).
 
@@ -160,9 +155,6 @@ instance, or the system browser.
     - __hardwareback__: works the same way as on Android platform.
     - __fullscreen__: set to `yes` to create the browser control without a border around it. Please note that if __location=no__ is also specified, there will be no control presented to user to close IAB window.
 
-- __headers__: Headers for the http request. Optional. _(String)_ or _(javascript object)_
-    - _(String)_: headers must be in `header=value` form, separated by commas : `header1=value1,header2=value2`. don't use _(String)_ if commas or equals can be contained in headers or values.
-    - _(javascript object)_: headers are stored in object's properties like this `{ 'header1': 'value1', 'header2': 'value2'}`. this storage always works even if headers contain commas or equals.
 
 ### Supported Platforms
 
@@ -182,6 +174,16 @@ instance, or the system browser.
 At the moment the only supported target in OSX is `_system`.
 
 `_blank` and `_self` targets are not yet implemented and are ignored silently. Pull requests and patches to get these to work are greatly appreciated.
+
+### iOS Quirks
+
+Since the introduction of iPadOS 13, iPads try to adapt their content mode / user agent for the optimal browsing experience. This may result in iPads having their user agent set to Macintosh, making it hard to detect them as mobile devices using user agent string sniffing. You can change this with the `PreferredContentMode` preference in `config.xml`.
+
+```xml
+<preference name="PreferredContentMode" value="mobile" />
+```
+
+The example above forces the user agent to contain `iPad`. The other option is to use the value `desktop` to turn the user agent to `Macintosh`.
 
 ### Browser Quirks
 
